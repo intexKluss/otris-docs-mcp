@@ -1,6 +1,6 @@
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync, rmSync, statSync } from 'fs';
 import { join, dirname } from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { loginInteractive, loadAuthState, loadPlaywright } from './auth.mjs';
 import { SECTIONS, BASE_URL } from './sections.mjs';
 import { extractFromPage } from './extractors.mjs';
@@ -283,7 +283,7 @@ async function crawlManuals(page, authPath, docsPath, stats) {
       const pdf = pdfs[i];
       const filename = sanitize(pdf.text) + '.pdf';
       try {
-        execSync(`curl -sL -b "${cookieStr}" "${pdf.href}" -o "${join(pdfDir, filename)}"`, { timeout: 30000 });
+        execFileSync('curl', ['-sL', '-b', cookieStr, pdf.href, '-o', join(pdfDir, filename)], { timeout: 30000 });
         stats.pages++;
         if ((i + 1) % 10 === 0 || i === pdfs.length - 1) {
           console.log(`  [${i + 1}/${pdfs.length}] ${pdf.text}`);

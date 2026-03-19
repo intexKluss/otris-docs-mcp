@@ -1,6 +1,12 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
-import { join, relative, basename, sep } from 'path';
+import { join, relative, basename, sep, resolve } from 'path';
 import { execFileSync } from 'child_process';
+
+function isInsideVault(vaultPath, targetPath) {
+  const resolvedVault = resolve(vaultPath);
+  const resolvedTarget = resolve(targetPath);
+  return resolvedTarget.startsWith(resolvedVault + sep) || resolvedTarget === resolvedVault;
+}
 
 /**
  * Returns array of section directory names in vault root.
@@ -26,6 +32,8 @@ export function listFiles(vaultPath, section, subfolder) {
   const searchDir = subfolder
     ? join(vaultPath, section, subfolder)
     : join(vaultPath, section);
+
+  if (!isInsideVault(vaultPath, searchDir)) return [];
 
   if (!existsSync(searchDir) || !statSync(searchDir).isDirectory()) {
     return [];
@@ -59,6 +67,8 @@ function collectMdFiles(dir, vaultRoot, results) {
  */
 export function readDoc(vaultPath, docPath, maxLength = 50000) {
   const filePath = join(vaultPath, docPath + '.md');
+
+  if (!isInsideVault(vaultPath, filePath)) return null;
 
   if (!existsSync(filePath)) {
     return null;
@@ -111,6 +121,8 @@ function parseFrontmatter(raw) {
 export function searchDocs(vaultPath, query, options = {}) {
   const { section, contextLines = 2, maxResults = 10 } = options;
   const searchPath = section ? join(vaultPath, section) : vaultPath;
+
+  if (!isInsideVault(vaultPath, searchPath)) return [];
 
   if (!existsSync(searchPath)) {
     return [];
