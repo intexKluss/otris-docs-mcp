@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
 import { join, relative, basename, sep } from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 /**
  * Returns array of section directory names in vault root.
@@ -109,7 +109,7 @@ function parseFrontmatter(raw) {
  * Returns [{ file, title, matches }].
  */
 export function searchDocs(vaultPath, query, options = {}) {
-  const { section, contextLines = 2 } = options;
+  const { section, contextLines = 2, maxResults = 10 } = options;
   const searchPath = section ? join(vaultPath, section) : vaultPath;
 
   if (!existsSync(searchPath)) {
@@ -117,20 +117,18 @@ export function searchDocs(vaultPath, query, options = {}) {
   }
 
   try {
-    return searchWithRipgrep(vaultPath, searchPath, query, contextLines);
+    return searchWithRipgrep(vaultPath, searchPath, query, contextLines, maxResults);
   } catch {
-    return searchWithNode(vaultPath, searchPath, query, contextLines);
+    return searchWithNode(vaultPath, searchPath, query, contextLines, maxResults);
   }
 }
 
-function searchWithRipgrep(vaultPath, searchPath, query, contextLines) {
-  // Escape shell special chars in query
-  const escapedQuery = query.replace(/'/g, "'\\''");
-  const cmd = `rg -i -n --no-heading -C ${contextLines} --glob '*.md' '${escapedQuery}' '${searchPath}'`;
+function searchWithRipgrep(vaultPath, searchPath, query, contextLines, maxResults) {
+  const args = ['-i', '-n', '--no-heading', '-C', String(contextLines), '--glob', '*.md', '--max-count', String(maxResults * 2), query, searchPath];
 
   let output;
   try {
-    output = execSync(cmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    output = execFileSync('rg', args, { encoding: 'utf-8', timeout: 10000 }).trim();
   } catch (err) {
     // rg exits with code 1 when no matches found
     if (err.status === 1 && err.stdout !== undefined) {
@@ -140,11 +138,11 @@ function searchWithRipgrep(vaultPath, searchPath, query, contextLines) {
     throw err;
   }
 
-  if (!output || !output.trim()) {
+  if (!output) {
     return [];
   }
 
-  return parseRipgrepOutput(vaultPath, output);
+  return parseRipgrepOutput(vaultPath, output).slice(0, maxResults);
 }
 
 function parseRipgrepOutput(vaultPath, output) {
@@ -179,7 +177,7 @@ function parseRipgrepOutput(vaultPath, output) {
   return Array.from(fileGroups.values());
 }
 
-function searchWithNode(vaultPath, searchPath, query, contextLines) {
+function searchWithNode(vaultPath, searchPath, query, contextLines, maxResults) {
   const regex = new RegExp(escapeRegex(query), 'i');
   const results = [];
 
@@ -216,7 +214,7 @@ function searchWithNode(vaultPath, searchPath, query, contextLines) {
     }
   }
 
-  return results;
+  return results.slice(0, maxResults);
 }
 
 function collectMdFilePaths(dir, results) {
