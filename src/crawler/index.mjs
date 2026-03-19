@@ -285,6 +285,7 @@ async function crawlManuals(page, authPath, docsPath, stats) {
       try {
         execFileSync('curl', ['-sL', '-b', cookieStr, pdf.href, '-o', join(pdfDir, filename)], { timeout: 30000 });
         stats.pages++;
+        stats.pdfs++;
         if ((i + 1) % 10 === 0 || i === pdfs.length - 1) {
           console.log(`  [${i + 1}/${pdfs.length}] ${pdf.text}`);
         }
@@ -370,8 +371,10 @@ function convertAllLinks(docsPath) {
 function writeManifest(docsPath, stats) {
   const manifest = {
     crawledAt: new Date().toISOString(),
-    totalPages: stats.pages,
-    errors: stats.errors.length,
+    crawlerVersion: '0.1.0',
+    pageCount: stats.pages,
+    pdfCount: stats.pdfs || 0,
+    errorCount: stats.errors.length,
     sections: stats.sections,
   };
   writeFileSync(getManifestPath(), JSON.stringify(manifest, null, 2));
@@ -410,7 +413,7 @@ export async function runCrawl({ login, section }) {
   const context = await browser.newContext({ storageState: authPath });
   const page = await context.newPage();
 
-  const stats = { pages: 0, errors: [], sections: [] };
+  const stats = { pages: 0, pdfs: 0, errors: [], sections: [] };
 
   // Determine which sections to crawl
   const sectionsToProcess = section
