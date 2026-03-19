@@ -4,14 +4,14 @@ import { join, basename, dirname, resolve, posix } from 'path';
 /**
  * Recursively walks a directory, returns all file paths.
  */
-function walkDir(dir, base = dir) {
+function walkDir(dir) {
   const entries = [];
   for (const entry of readdirSync(dir)) {
     if (entry.startsWith('.') || entry.startsWith('_')) continue;
     const full = join(dir, entry);
     const stat = statSync(full);
     if (stat.isDirectory()) {
-      entries.push(...walkDir(full, base));
+      entries.push(...walkDir(full));
     } else if (entry.endsWith('.md')) {
       entries.push(full);
     }
