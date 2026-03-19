@@ -8,25 +8,40 @@ Ask Claude natural-language questions about otris DOCUMENTS — classes, methods
 
 - **Crawls** the otris.software documentation (Scripting APIs, HowTos, Properties, Manuals)
 - **Stores** everything locally as Markdown (~1000 pages)
-- **Serves** it as an MCP Server with 4 tools that Claude Code can use automatically
+- **Serves** it as an MCP Server with 5 tools that Claude Code can use automatically
+- **Includes** a pre-crawled vault (995 pages + 44 PDFs) — works out of the box, no crawl needed
 
 ## Requirements
 
 - Node.js >= 20
-- [Playwright](https://playwright.dev/) (only for crawling, not for the MCP server)
-- An otris.software account with documentation access
+- [Playwright](https://playwright.dev/) (only needed for re-crawling, not for the MCP server)
+- An otris.software account (only needed for re-crawling)
 
-## Installation
+## Quick Start
 
 ```bash
 npm install -g otris-docs-mcp
 ```
 
-## Setup
+Add to Claude Code settings (`~/.claude/settings.json` on Mac/Linux, `%APPDATA%\Claude\settings.json` on Windows):
 
-### 1. Login & Crawl
+```json
+{
+  "mcpServers": {
+    "otris-docs": {
+      "command": "otris-docs-mcp"
+    }
+  }
+}
+```
 
-First time: open a browser to log into otris.software:
+Restart Claude Code. Ask questions. Done.
+
+The package includes a pre-crawled documentation vault (995 pages, 44 PDFs, Stand: 2026-03-19) — no crawling needed to get started.
+
+## Updating the Documentation
+
+To get the latest documentation from otris.software:
 
 ```bash
 otris-docs-mcp crawl --login
@@ -52,28 +67,9 @@ otris-docs-mcp crawl --section howtos
 otris-docs-mcp crawl --section manuals
 ```
 
-### 2. Add to Claude Code
+## Usage
 
-Add the MCP server to your Claude Code settings:
-
-**Mac/Linux:** `~/.claude/settings.json`
-**Windows:** `%APPDATA%\Claude\settings.json`
-
-```json
-{
-  "mcpServers": {
-    "otris-docs": {
-      "command": "otris-docs-mcp"
-    }
-  }
-}
-```
-
-Restart Claude Code. Done.
-
-### 3. Ask questions
-
-Just ask Claude anything about otris DOCUMENTS:
+Ask Claude anything about otris DOCUMENTS:
 
 - "Kann man Mappen per Script erstellen?"
 - "Wie funktioniert setAttribute bei DocFile?"
@@ -85,7 +81,7 @@ Claude uses the MCP tools automatically to find answers in the documentation.
 
 ## MCP Tools
 
-The server exposes 4 tools:
+The server exposes 5 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -93,6 +89,7 @@ The server exposes 4 tools:
 | `otris_search` | Full-text search across all documentation. Supports section filter. |
 | `otris_read` | Read a specific documentation page by path. |
 | `otris_list` | List all pages in a section or subfolder. |
+| `otris_status` | Shows how current the documentation is (current/aging/stale) and suggests re-crawl if needed. |
 
 ## Documentation Sections
 
@@ -161,10 +158,10 @@ This asks for each step: NPM package, documentation vault, Claude Code config.
 ## For Developers
 
 ```bash
-git clone https://github.com/manolklussdev/otris-docs-mcp.git
+git clone https://github.com/leminkozey/otris-docs-mcp.git
 cd otris-docs-mcp
 npm install
-npm test        # 48 tests
+npm test        # 50 tests
 npm link        # Install locally for testing
 ```
 
