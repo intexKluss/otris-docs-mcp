@@ -6,6 +6,7 @@ import { handleOverview } from './tools/overview.mjs';
 import { handleSearch } from './tools/search.mjs';
 import { handleRead } from './tools/read.mjs';
 import { handleList } from './tools/list.mjs';
+import { handleStatus } from './tools/status.mjs';
 
 export async function startServer() {
   const vaultPath = getDocsPath();
@@ -73,6 +74,16 @@ export async function startServer() {
     async (params) => {
       const files = handleList(vaultPath, params);
       return { content: [{ type: 'text', text: JSON.stringify(files, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    'otris_status',
+    'Check the status of the local otris DOCUMENTS documentation vault. Returns freshness, page count, PDF count, and whether an update is recommended.',
+    {},
+    async () => {
+      const result = handleStatus(vaultPath);
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );
 
