@@ -6,7 +6,7 @@
   "bin": {
     "otris-docs-mcp": "./bin/otris-docs-mcp.mjs"
   },
-  "files": ["bin/", "src/"],
+  "files": ["bin/", "src/", "vault/"],
   "engines": { "node": ">=20" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0"
