@@ -1,0 +1,8 @@
+{
+  "crawledAt": "2026-03-19T08:30:00Z",
+  "crawlerVersion": "0.1.0",
+  "pageCount": 5,
+  "pdfCount": 0,
+  "errorCount": 0,
+  "sections": ["portalscript-api", "howtos", "properties"]
+}
