@@ -1,27 +1,50 @@
 # otris-docs-mcp
 
-MCP-Client fuer die [otris DOCUMENTS](https://otris.software) Dokumentation. Verbindet sich mit einem otris-docs-web Server und stellt die komplette Dokumentation als MCP-Tools bereit.
+MCP-Client fuer die [otris DOCUMENTS](https://otris.software) Dokumentation. Verbindet sich mit einem [otris-docs-web](https://github.com/intexKluss/otris-docs-web) Server und stellt die komplette Dokumentation als MCP-Tools bereit.
 
-Frag deinen Coding-Agent Fragen zur otris DOCUMENTS API -- Klassen, Methoden, HowTos, Properties -- und bekomme Antworten direkt aus der Dokumentation.
+Frag deinen Coding-Agent Fragen zur otris DOCUMENTS API — Klassen, Methoden, HowTos, Properties — und bekomme Antworten direkt aus der Dokumentation.
 
-## Voraussetzungen
+## Zwei Wege zur Einrichtung
 
-- Node.js >= 20
-- Zugriff auf einen laufenden otris-docs-web Server (frag deinen Admin nach der URL)
+### Option A: Remote MCP (empfohlen)
 
-## Installation
+Wenn dein Agent Remote-MCP unterstuetzt (Claude Code, Codex CLI), brauchst du **keine lokale Installation**. Verbinde dich direkt mit dem Server:
+
+**Claude Code** — in `.mcp.json` oder `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "otris-docs": {
+      "url": "http://SERVER-IP:3000/sse"
+    }
+  }
+}
+```
+
+**Codex CLI** — in `~/.codex/config.json`:
+
+```json
+{
+  "mcpServers": {
+    "otris-docs": {
+      "url": "http://SERVER-IP:3000/sse"
+    }
+  }
+}
+```
+
+Ersetze `SERVER-IP:3000` mit der URL deines otris-docs-web Servers. Agent neustarten. Fertig.
+
+### Option B: Lokaler MCP-Proxy
+
+Fuer Agents die kein Remote-MCP unterstuetzen (Gemini CLI, andere):
 
 ```bash
 npm install -g git+ssh://git@github.com:leminkozey/otris-docs-mcp.git
 ```
 
-Voraussetzung: Zugriff auf das Git-Repository.
-
-## Einrichtung
-
-### Claude Code
-
-In `~/.claude/settings.json`:
+Dann in der Agent-Konfiguration:
 
 ```json
 {
@@ -35,27 +58,6 @@ In `~/.claude/settings.json`:
   }
 }
 ```
-
-### Codex CLI
-
-In `~/.codex/config.json`:
-
-```json
-{
-  "mcpServers": {
-    "otris-docs": {
-      "command": "otris-docs-mcp",
-      "env": {
-        "OTRIS_DOCS_URL": "http://SERVER-IP:3000"
-      }
-    }
-  }
-}
-```
-
-Ersetze `SERVER-IP:3000` mit der URL deines otris-docs-web Servers.
-
-Coding-Agent neustarten. Fertig.
 
 ## Nutzung
 
@@ -72,38 +74,46 @@ Der Agent nutzt die MCP-Tools automatisch um Antworten in der Dokumentation zu f
 
 | Tool | Beschreibung |
 |------|-------------|
-| `otris_overview` | Uebersicht aller Sektionen mit Seitenzahlen. Mit Section-Parameter: detaillierte Auflistung. |
-| `otris_search` | Volltextsuche ueber die gesamte Dokumentation. |
-| `otris_read` | Eine bestimmte Dokumentationsseite lesen. |
-| `otris_list` | Alle Seiten einer Sektion auflisten. |
-| `otris_status` | Zeigt wie aktuell die Dokumentation ist. |
+| `otris_overview` | Uebersicht aller Sektionen mit Seitenzahlen |
+| `otris_search` | Volltextsuche ueber die gesamte Dokumentation |
+| `otris_read` | Eine bestimmte Dokumentationsseite lesen |
+| `otris_list` | Alle Seiten einer Sektion auflisten |
+| `otris_status` | Zeigt wie aktuell die Dokumentation ist |
 
 ## Konfiguration
 
 | Variable | Pflicht | Beschreibung |
 |----------|---------|-------------|
-| `OTRIS_DOCS_URL` | Ja | URL des otris-docs-web Servers |
+| `OTRIS_DOCS_URL` | Ja (nur Option B) | URL des otris-docs-web Servers |
 
 ## Wie es funktioniert
 
-Dieses Package ist ein duenner MCP-Client. Es enthaelt **keine** Dokumentationsdaten. Alle Anfragen werden per HTTP an den otris-docs-web Server weitergeleitet, der den Dokumentations-Vault hostet.
-
 ```
-Coding-Agent (Claude Code, Codex, ...)
+Coding-Agent (Claude Code, Codex, Gemini, ...)
     |
-    +-- otris-docs-mcp (MCP Server, lokal installiert)
+    +-- Remote MCP (Option A: direkt per SSE)
+    |       |
+    |       +-- otris-docs-web Server (hat den Vault)
+    |
+    +-- otris-docs-mcp (Option B: lokaler MCP-Proxy)
             |
             +-- HTTP --> otris-docs-web Server (hat den Vault)
 ```
 
-## Deinstallation
+Beide Optionen liefern dieselben 5 Tools. Option A ist einfacher (kein npm install), Option B funktioniert mit jedem MCP-faehigen Agent.
+
+## Deinstallation (nur Option B)
 
 ```bash
-node uninstall.mjs
+npx otris-docs-mcp/uninstall.mjs
 ```
 
-Das Script entfernt das globale NPM-Paket und den MCP-Eintrag aus der Claude Code / Codex Konfiguration.
+Entfernt das globale NPM-Paket und den MCP-Eintrag aus der Agent-Konfiguration.
+
+## Server-Setup
+
+Den otris-docs-web Server aufsetzen: [otris-docs-web Repository](https://github.com/intexKluss/otris-docs-web)
 
 ## License
 
-Proprietary -- see [LICENSE](LICENSE). For use by Intex Informationssysteme GmbH developers.
+Proprietary — for use by Intex Informationssysteme GmbH developers.
