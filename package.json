@@ -1,12 +1,12 @@
 {
   "name": "otris-docs-mcp",
-  "version": "0.1.0",
-  "description": "MCP Server for otris DOCUMENTS offline documentation",
+  "version": "0.2.0",
+  "description": "MCP client for otris DOCUMENTS documentation — connects to a remote otris-docs-web server",
   "type": "module",
   "bin": {
     "otris-docs-mcp": "./bin/otris-docs-mcp.mjs"
   },
-  "files": ["bin/", "src/", "vault/"],
+  "files": ["bin/", "src/"],
   "engines": { "node": ">=20" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",

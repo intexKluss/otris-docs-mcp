@@ -1,19 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { getDocsPath } from '../shared/config.mjs';
-import { handleOverview } from './tools/overview.mjs';
-import { handleSearch } from './tools/search.mjs';
-import { handleRead } from './tools/read.mjs';
-import { handleList } from './tools/list.mjs';
-import { handleStatus } from './tools/status.mjs';
 
-export async function startServer() {
-  const vaultPath = getDocsPath();
+export async function startServer(baseUrl) {
+  if (!baseUrl) {
+    console.error('OTRIS_DOCS_URL is required. Set it to the otris-docs-web server URL (e.g. http://10.0.0.5:3000)');
+    process.exit(1);
+  }
 
   const server = new McpServer({
     name: 'otris-docs-mcp',
-    version: '0.1.0',
+    version: '0.2.0',
   });
 
   server.tool(
@@ -23,8 +20,9 @@ export async function startServer() {
       section: z.string().optional().describe('Section name to get detailed listing for (e.g. "portalscript-api", "howtos")'),
     },
     async (params) => {
-      const result = handleOverview(vaultPath, params);
-      return { content: [{ type: 'text', text: result }] };
+      const qs = params.section ? `?section=${encodeURIComponent(params.section)}` : '';
+      const data = await apiFetch(`${baseUrl}/api/overview${qs}`);
+      return { content: [{ type: 'text', text: data.text }] };
     }
   );
 
@@ -38,8 +36,12 @@ export async function startServer() {
       context_lines: z.number().optional().describe('Number of context lines around each match (default: 3)'),
     },
     async (params) => {
-      const results = handleSearch(vaultPath, params);
-      return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };
+      const qs = new URLSearchParams({ query: params.query });
+      if (params.section) qs.set('section', params.section);
+      if (params.max_results) qs.set('max_results', String(params.max_results));
+      if (params.context_lines) qs.set('context_lines', String(params.context_lines));
+      const data = await apiFetch(`${baseUrl}/api/search?${qs}`);
+      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
     }
   );
 
@@ -51,15 +53,17 @@ export async function startServer() {
       max_length: z.number().optional().describe('Maximum content length in characters (default: 50000). Content beyond this is truncated.'),
     },
     async (params) => {
-      const result = handleRead(vaultPath, params);
-      if (result.error) {
-        return { content: [{ type: 'text', text: result.error }], isError: true };
+      const qs = new URLSearchParams({ path: params.path });
+      if (params.max_length) qs.set('max_length', String(params.max_length));
+      const data = await apiFetch(`${baseUrl}/api/read?${qs}`);
+      if (data.error) {
+        return { content: [{ type: 'text', text: data.error }], isError: true };
       }
       let text = '';
-      if (result.title) text += `# ${result.title}\n\n`;
-      if (result.source) text += `Source: ${result.source}\n\n`;
-      text += result.content;
-      if (result.truncated) text += '\n\n⚠️ Content was truncated.';
+      if (data.title) text += `# ${data.title}\n\n`;
+      if (data.source) text += `Source: ${data.source}\n\n`;
+      text += data.content;
+      if (data.truncated) text += '\n\n⚠️ Content was truncated.';
       return { content: [{ type: 'text', text }] };
     }
   );
@@ -72,21 +76,32 @@ export async function startServer() {
       subfolder: z.string().optional().describe('Subfolder within the section (e.g. "classes", "interfaces")'),
     },
     async (params) => {
-      const files = handleList(vaultPath, params);
-      return { content: [{ type: 'text', text: JSON.stringify(files, null, 2) }] };
+      const qs = new URLSearchParams({ section: params.section });
+      if (params.subfolder) qs.set('subfolder', params.subfolder);
+      const data = await apiFetch(`${baseUrl}/api/list?${qs}`);
+      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
     }
   );
 
   server.tool(
     'otris_status',
-    'Check the status of the local otris DOCUMENTS documentation vault. Returns freshness, page count, PDF count, and whether an update is recommended.',
+    'Check the status of the otris DOCUMENTS documentation vault on the server. Returns freshness, page count, and whether an update is recommended.',
     {},
     async () => {
-      const result = handleStatus(vaultPath);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      const data = await apiFetch(`${baseUrl}/api/status`);
+      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
     }
   );
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
+}
+
+async function apiFetch(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`API error ${res.status}: ${body}`);
+  }
+  return res.json();
 }
