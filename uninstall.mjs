@@ -23,7 +23,6 @@ function log(msg) { console.log(`  ${msg}`); }
 
 console.log('\notris-docs-mcp Uninstaller\n');
 
-// 1. Remove NPM package
 console.log('[1/2] NPM package');
 try {
   execSync('npm list -g otris-docs-mcp', { stdio: 'ignore' });
@@ -37,7 +36,6 @@ try {
   log('Nicht global installiert — uebersprungen.');
 }
 
-// 2. Remove MCP config from Claude Code / Codex settings
 console.log('\n[2/2] MCP-Konfiguration');
 
 const settingsPaths = isWin
@@ -61,9 +59,7 @@ for (const settingsPath of settingsPaths) {
         log('Uebersprungen.');
       }
     }
-  } catch {
-    // Settings file not parseable — skip
-  }
+  } catch {}
 }
 if (!cleaned) log('Kein MCP-Eintrag gefunden — uebersprungen.');
 
