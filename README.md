@@ -12,8 +12,10 @@ Frag deinen Coding-Agent Fragen zur otris DOCUMENTS API -- Klassen, Methoden, Ho
 ## Installation
 
 ```bash
-npm install -g otris-docs-mcp
+npm install -g git+ssh://git@github.com:leminkozey/otris-docs-mcp.git
 ```
+
+Voraussetzung: Zugriff auf das Git-Repository.
 
 ## Einrichtung
 
