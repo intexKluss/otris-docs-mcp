@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-// Cross-platform uninstall script for otris-docs-mcp
-// Works on macOS, Linux, and Windows
 
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { homedir, platform } from 'os';
 import { createInterface } from 'readline';
@@ -26,7 +24,7 @@ function log(msg) { console.log(`  ${msg}`); }
 console.log('\notris-docs-mcp Uninstaller\n');
 
 // 1. Remove NPM package
-console.log('[1/3] NPM package');
+console.log('[1/2] NPM package');
 try {
   execSync('npm list -g otris-docs-mcp', { stdio: 'ignore' });
   if (await ask('  Global NPM package entfernen?')) {
@@ -39,22 +37,8 @@ try {
   log('Nicht global installiert — uebersprungen.');
 }
 
-// 2. Remove crawled docs vault
-console.log('\n[2/3] Dokumentations-Vault');
-const docsPath = process.env.OTRIS_DOCS_PATH || join(home, '.otris-docs');
-if (existsSync(docsPath)) {
-  if (await ask(`  ${docsPath} loeschen?`)) {
-    rmSync(docsPath, { recursive: true, force: true });
-    log('Geloescht.');
-  } else {
-    log('Uebersprungen.');
-  }
-} else {
-  log(`${docsPath} existiert nicht — uebersprungen.`);
-}
-
-// 3. Remove MCP config from Claude Code settings
-console.log('\n[3/3] Claude Code MCP-Konfiguration');
+// 2. Remove MCP config from Claude Code / Codex settings
+console.log('\n[2/2] MCP-Konfiguration');
 
 const settingsPaths = isWin
   ? [join(home, 'AppData', 'Roaming', 'Claude', 'settings.json'), join(home, '.claude', 'settings.json')]

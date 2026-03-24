@@ -1,179 +1,99 @@
 # otris-docs-mcp
 
-MCP Server for [otris DOCUMENTS](https://otris.software) offline documentation. Crawls the complete otris documentation portal and makes it available to Claude Code as a searchable knowledge base.
+MCP-Client fuer die [otris DOCUMENTS](https://otris.software) Dokumentation. Verbindet sich mit einem otris-docs-web Server und stellt die komplette Dokumentation als MCP-Tools bereit.
 
-Ask Claude natural-language questions about otris DOCUMENTS — classes, methods, HowTos, properties, manuals — and get answers backed by the full documentation.
+Frag deinen Coding-Agent Fragen zur otris DOCUMENTS API -- Klassen, Methoden, HowTos, Properties -- und bekomme Antworten direkt aus der Dokumentation.
 
-## What it does
-
-- **Crawls** the otris.software documentation (Scripting APIs, HowTos, Properties, Manuals)
-- **Stores** everything locally as Markdown (~1000 pages)
-- **Serves** it as an MCP Server with 5 tools that Claude Code can use automatically
-- **Includes** a pre-crawled vault (995 pages + 44 PDFs) — works out of the box, no crawl needed
-
-## Requirements
+## Voraussetzungen
 
 - Node.js >= 20
-- [Playwright](https://playwright.dev/) (only needed for re-crawling, not for the MCP server)
-- An otris.software account (only needed for re-crawling)
+- Zugriff auf einen laufenden otris-docs-web Server (frag deinen Admin nach der URL)
 
-## Quick Start
+## Installation
 
 ```bash
 npm install -g otris-docs-mcp
 ```
 
-Add to Claude Code settings (`~/.claude/settings.json` on Mac/Linux, `%APPDATA%\Claude\settings.json` on Windows):
+## Einrichtung
 
-```json
-{
-  "mcpServers": {
-    "otris-docs": {
-      "command": "otris-docs-mcp"
-    }
-  }
-}
-```
+### Claude Code
 
-Restart Claude Code. Ask questions. Done.
-
-The package includes a pre-crawled documentation vault (995 pages, 44 PDFs, Stand: 2026-03-19) — no crawling needed to get started.
-
-## Updating the Documentation
-
-To get the latest documentation from otris.software:
-
-```bash
-otris-docs-mcp crawl --login
-```
-
-This opens Chromium. Log in with your otris account, then **close the browser window**. Your session is saved locally.
-
-Then crawl the documentation:
-
-```bash
-otris-docs-mcp crawl
-```
-
-This downloads ~1000 pages + PDFs. Takes about 5-10 minutes.
-
-To update later, just run `otris-docs-mcp crawl` again. If your session expired, re-run with `--login`.
-
-You can also crawl a single section:
-
-```bash
-otris-docs-mcp crawl --section portalscript-api
-otris-docs-mcp crawl --section howtos
-otris-docs-mcp crawl --section manuals
-```
-
-## Usage
-
-Ask Claude anything about otris DOCUMENTS:
-
-- "Kann man Mappen per Script erstellen?"
-- "Wie funktioniert setAttribute bei DocFile?"
-- "Gibt es eine API fuer Email-Versand?"
-- "Was sind Guards bei Workflows?"
-- "Welche Properties gibt es fuer AccessProfile?"
-
-Claude uses the MCP tools automatically to find answers in the documentation.
-
-## MCP Tools
-
-The server exposes 5 tools:
-
-| Tool | Description |
-|------|-------------|
-| `otris_overview` | Compact overview of all sections + page counts. With section parameter: detailed listing. |
-| `otris_search` | Full-text search across all documentation. Supports section filter. |
-| `otris_read` | Read a specific documentation page by path. |
-| `otris_list` | List all pages in a section or subfolder. |
-| `otris_status` | Shows how current the documentation is (current/aging/stale) and suggests re-crawl if needed. |
-
-## Documentation Sections
-
-| Section | Content | Pages |
-|---------|---------|-------|
-| `portalscript-api` | Server-side scripting classes (DocFile, Context, SystemUser, ...) | ~110 |
-| `scriptextensions-api` | Script extension modules (ScriptList, Notifications, ...) | ~34 |
-| `gadget-api` | Gadget framework (Form, Chart, Timeline, ...) | ~39 |
-| `client-sdk` | Frontend SDK (FileFormModel, GadgetContext, ...) | ~40 |
-| `drop-sdk` | Documents Drop SDK | ~26 |
-| `record-library` | Record data library | ~10 |
-| `otr-tools` | otrAssert, otrLogger, otrPackage, otrUpgrade, otrTest | ~32 |
-| `howtos` | Task-focused guides (Workflows, ScriptList, Gadgets, ...) | ~91 |
-| `properties` | Configuration properties reference | ~1 |
-| `manuals` | Online manuals + PDF downloads | ~650 |
-
-## Configuration
-
-| Env Variable | Default | Description |
-|-------------|---------|-------------|
-| `OTRIS_DOCS_PATH` | `~/.otris-docs` | Where documentation is stored |
-
-Custom path example:
+In `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
     "otris-docs": {
       "command": "otris-docs-mcp",
-      "env": { "OTRIS_DOCS_PATH": "/path/to/docs" }
+      "env": {
+        "OTRIS_DOCS_URL": "http://SERVER-IP:3000"
+      }
     }
   }
 }
 ```
 
-## Uninstall
+### Codex CLI
 
-Run the uninstall script:
+In `~/.codex/config.json`:
 
-```bash
-npx otris-docs-mcp-uninstall
+```json
+{
+  "mcpServers": {
+    "otris-docs": {
+      "command": "otris-docs-mcp",
+      "env": {
+        "OTRIS_DOCS_URL": "http://SERVER-IP:3000"
+      }
+    }
+  }
+}
 ```
 
-Or manually:
+Ersetze `SERVER-IP:3000` mit der URL deines otris-docs-web Servers.
 
-```bash
-# 1. Remove NPM package
-npm uninstall -g otris-docs-mcp
+Coding-Agent neustarten. Fertig.
 
-# 2. Remove downloaded documentation
-rm -rf ~/.otris-docs          # Mac/Linux
-rmdir /s /q %USERPROFILE%\.otris-docs  # Windows
+## Nutzung
 
-# 3. Remove MCP config from Claude Code settings
-# Edit ~/.claude/settings.json and remove the "otris-docs" entry
+Frag deinen Agent einfach auf Deutsch oder Englisch:
+
+- "Wie erstelle ich eine Mappe per Script?"
+- "Welche Methoden hat DocFile?"
+- "Was sind Guards bei Workflows?"
+- "Zeig mir die Properties von AccessProfile"
+
+Der Agent nutzt die MCP-Tools automatisch um Antworten in der Dokumentation zu finden.
+
+## MCP-Tools
+
+| Tool | Beschreibung |
+|------|-------------|
+| `otris_overview` | Uebersicht aller Sektionen mit Seitenzahlen. Mit Section-Parameter: detaillierte Auflistung. |
+| `otris_search` | Volltextsuche ueber die gesamte Dokumentation. |
+| `otris_read` | Eine bestimmte Dokumentationsseite lesen. |
+| `otris_list` | Alle Seiten einer Sektion auflisten. |
+| `otris_status` | Zeigt wie aktuell die Dokumentation ist. |
+
+## Konfiguration
+
+| Variable | Pflicht | Beschreibung |
+|----------|---------|-------------|
+| `OTRIS_DOCS_URL` | Ja | URL des otris-docs-web Servers |
+
+## Wie es funktioniert
+
+Dieses Package ist ein duenner MCP-Client. Es enthaelt **keine** Dokumentationsdaten. Alle Anfragen werden per HTTP an den otris-docs-web Server weitergeleitet, der den Dokumentations-Vault hostet.
+
 ```
-
-Or use the interactive uninstall script:
-
-```bash
-node uninstall.mjs
+Coding-Agent (Claude Code, Codex, ...)
+    |
+    +-- otris-docs-mcp (MCP Server, lokal installiert)
+            |
+            +-- HTTP --> otris-docs-web Server (hat den Vault)
 ```
-
-This asks for each step: NPM package, documentation vault, Claude Code config.
-
-## For Developers
-
-```bash
-git clone https://github.com/leminkozey/otris-docs-mcp.git
-cd otris-docs-mcp
-npm install
-npm test        # 50 tests
-npm link        # Install locally for testing
-```
-
-## How it works
-
-1. **Crawler** uses Playwright to authenticate and navigate otris.software
-2. Content is extracted from different page types (TypeDoc, JSDoc, otris-book)
-3. HTML is converted to clean Markdown with proper formatting
-4. Internal links are converted to relative vault paths
-5. **MCP Server** serves the Markdown files via stdio to Claude Code
-6. Claude uses the tools to find relevant documentation and answer questions
 
 ## License
 
-Private — for use by Intex Informationssysteme GmbH developers.
+Private -- for use by Intex Informationssysteme GmbH developers.
