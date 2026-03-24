@@ -96,6 +96,14 @@ Coding-Agent (Claude Code, Codex, ...)
             +-- HTTP --> otris-docs-web Server (hat den Vault)
 ```
 
+## Deinstallation
+
+```bash
+node uninstall.mjs
+```
+
+Das Script entfernt das globale NPM-Paket und den MCP-Eintrag aus der Claude Code / Codex Konfiguration.
+
 ## License
 
-Private -- for use by Intex Informationssysteme GmbH developers.
+Proprietary -- see [LICENSE](LICENSE). For use by Intex Informationssysteme GmbH developers.

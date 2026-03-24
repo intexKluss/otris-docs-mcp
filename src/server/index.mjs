@@ -10,7 +10,7 @@ export async function startServer(baseUrl) {
 
   const server = new McpServer({
     name: 'otris-docs-mcp',
-    version: '0.2.0',
+    version: '1.0.0',
   });
 
   server.tool(
@@ -20,8 +20,10 @@ export async function startServer(baseUrl) {
       section: z.string().optional().describe('Section name to get detailed listing for (e.g. "portalscript-api", "howtos")'),
     },
     async (params) => {
-      const qs = params.section ? `?section=${encodeURIComponent(params.section)}` : '';
-      const data = await apiFetch(`${baseUrl}/api/overview${qs}`);
+      const qs = new URLSearchParams();
+      if (params.section) qs.set('section', params.section);
+      const query = qs.toString();
+      const data = await apiFetch(`${baseUrl}/api/overview${query ? `?${query}` : ''}`);
       return { content: [{ type: 'text', text: data.text }] };
     }
   );
@@ -32,8 +34,8 @@ export async function startServer(baseUrl) {
     {
       query: z.string().describe('Search query (case-insensitive text search)'),
       section: z.string().optional().describe('Limit search to a specific section (e.g. "portalscript-api")'),
-      max_results: z.number().optional().describe('Maximum number of results (default: 10)'),
-      context_lines: z.number().optional().describe('Number of context lines around each match (default: 3)'),
+      max_results: z.number().int().min(1).max(100).optional().describe('Maximum number of results (default: 10)'),
+      context_lines: z.number().int().min(0).max(20).optional().describe('Number of context lines around each match (default: 3)'),
     },
     async (params) => {
       const qs = new URLSearchParams({ query: params.query });
@@ -50,7 +52,7 @@ export async function startServer(baseUrl) {
     'Read the full content of a specific documentation page. Use the path from otris_overview or otris_search results. Returns title, source URL, and markdown content.',
     {
       path: z.string().describe('Document path relative to vault root, without .md extension (e.g. "portalscript-api/classes/DocFile")'),
-      max_length: z.number().optional().describe('Maximum content length in characters (default: 50000). Content beyond this is truncated.'),
+      max_length: z.number().int().min(1).max(200000).optional().describe('Maximum content length in characters (default: 50000). Content beyond this is truncated.'),
     },
     async (params) => {
       const qs = new URLSearchParams({ path: params.path });
@@ -98,7 +100,15 @@ export async function startServer(baseUrl) {
 }
 
 async function apiFetch(url) {
-  const res = await fetch(url);
+  let res;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      throw new Error(`Server not responding (timeout after 30s). Is otris-docs-web running at ${new URL(url).origin}?`);
+    }
+    throw new Error(`Cannot reach server at ${new URL(url).origin} — ${err.message}`);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`API error ${res.status}: ${body}`);
