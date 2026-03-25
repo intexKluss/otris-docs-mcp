@@ -29,16 +29,17 @@ Oder manuell in `.mcp.json` oder `~/.claude/settings.json`:
 }
 ```
 
-**Codex CLI** — in `~/.codex/config.json`:
+**Codex CLI** — per CLI oder manuell:
 
-```json
-{
-  "mcpServers": {
-    "otris-docs": {
-      "url": "http://SERVER-IP:3000/sse"
-    }
-  }
-}
+```bash
+codex mcp add otris-docs --url http://SERVER-IP:3000/mcp
+```
+
+Oder in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.otris-docs]
+url = "http://SERVER-IP:3000/mcp"
 ```
 
 Ersetze `SERVER-IP:3000` mit der URL deines otris-docs-web Servers. Agent neustarten. Fertig.
