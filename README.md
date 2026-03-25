@@ -10,12 +10,19 @@ Frag deinen Coding-Agent Fragen zur otris DOCUMENTS API — Klassen, Methoden, H
 
 Wenn dein Agent Remote-MCP unterstuetzt (Claude Code, Codex CLI), brauchst du **keine lokale Installation**. Verbinde dich direkt mit dem Server:
 
-**Claude Code** — in `.mcp.json` oder `~/.claude/settings.json`:
+**Claude Code** — per CLI (empfohlen):
+
+```bash
+claude mcp add --transport sse otris-docs http://SERVER-IP:3000/sse
+```
+
+Oder manuell in `.mcp.json` oder `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
     "otris-docs": {
+      "type": "sse",
       "url": "http://SERVER-IP:3000/sse"
     }
   }
