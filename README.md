@@ -13,10 +13,12 @@ Wenn dein Agent Remote-MCP unterstuetzt (Claude Code, Codex CLI), brauchst du **
 **Claude Code** — per CLI (empfohlen):
 
 ```bash
-claude mcp add --transport sse otris-docs http://SERVER-IP:3000/sse
+claude mcp add --transport sse --scope user otris-docs http://SERVER-IP:3000/sse
 ```
 
-Oder manuell in `.mcp.json` oder `~/.claude/settings.json`:
+`--scope user` schreibt in `~/.claude.json` und macht den Server global verfuegbar — auch in der VS Code Claude Code Extension.
+
+Oder manuell in `.mcp.json` (nur CLI, projekt-spezifisch):
 
 ```json
 {
@@ -28,6 +30,8 @@ Oder manuell in `.mcp.json` oder `~/.claude/settings.json`:
   }
 }
 ```
+
+**Hinweis:** `~/.claude/.mcp.json` wird nur von der CLI gelesen. Fuer die VS Code Extension muss der Server in `~/.claude.json` stehen (per `--scope user`).
 
 **Codex CLI** — per CLI oder manuell:
 
