@@ -42,6 +42,36 @@ Oder in `~/.codex/config.toml`:
 url = "http://SERVER-IP:3000/mcp"
 ```
 
+**VS Code (GitHub Copilot)** — in `.vscode/mcp.json` (projekt-spezifisch):
+
+```json
+{
+  "servers": {
+    "otris-docs": {
+      "type": "sse",
+      "url": "http://SERVER-IP:3000/sse"
+    }
+  }
+}
+```
+
+Oder global in VS Code User Settings (`Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)"):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "otris-docs": {
+        "type": "sse",
+        "url": "http://SERVER-IP:3000/sse"
+      }
+    }
+  }
+}
+```
+
+Voraussetzung: VS Code 1.99+, Copilot im **Agent Mode** (nicht Ask/Edit).
+
 Ersetze `SERVER-IP:3000` mit der URL deines otris-docs-web Servers. Agent neustarten. Fertig.
 
 ### Option B: Lokaler MCP-Proxy
