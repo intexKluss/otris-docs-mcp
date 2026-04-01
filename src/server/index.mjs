@@ -17,7 +17,7 @@ export async function startServer(baseUrl) {
     'otris_overview',
     'Get an overview of the otris DOCUMENTS documentation vault. Without parameters, returns a compact summary of all sections with page counts. With a section parameter, returns a detailed listing of all pages grouped by subfolder.',
     {
-      section: z.string().optional().describe('Section name to get detailed listing for (e.g. "portalscript-api", "howtos")'),
+      section: z.string().optional().describe('Section name to get detailed listing for (e.g. "Portalscript API", "HowTos", "Gadget API"). Use exact names as shown by otris_overview.'),
     },
     async (params) => {
       const qs = new URLSearchParams();
@@ -33,7 +33,7 @@ export async function startServer(baseUrl) {
     'Full-text search across the otris DOCUMENTS documentation. Returns matching files with context lines around each match. Use this to find specific API methods, classes, properties, or howto content.',
     {
       query: z.string().describe('Search query (case-insensitive text search)'),
-      section: z.string().optional().describe('Limit search to a specific section (e.g. "portalscript-api")'),
+      section: z.string().optional().describe('Limit search to a specific section (e.g. "Portalscript API", "HowTos", "Gadget API"). Use exact names as shown by otris_overview.'),
       max_results: z.number().int().min(1).max(100).optional().describe('Maximum number of results (default: 10)'),
       context_lines: z.number().int().min(0).max(20).optional().describe('Number of context lines around each match (default: 3)'),
     },
@@ -51,7 +51,7 @@ export async function startServer(baseUrl) {
     'otris_read',
     'Read the full content of a specific documentation page. Use the path from otris_overview or otris_search results. Returns title, source URL, and markdown content.',
     {
-      path: z.string().describe('Document path relative to vault root, without .md extension (e.g. "portalscript-api/classes/DocFile")'),
+      path: z.string().describe('Document path relative to vault root, without .md extension (e.g. "Portalscript API/classes/DocFile", "HowTos/Gentable über Gadget-Skriptliste befüllen")'),
       max_length: z.number().int().min(1).max(200000).optional().describe('Maximum content length in characters (default: 50000). Content beyond this is truncated.'),
     },
     async (params) => {
@@ -74,7 +74,7 @@ export async function startServer(baseUrl) {
     'otris_list',
     'List all documentation pages in a section or subfolder. Returns an array of {name, path} objects. Use this to enumerate available pages before reading them.',
     {
-      section: z.string().describe('Section name (e.g. "portalscript-api", "howtos", "properties")'),
+      section: z.string().describe('Section name (e.g. "Portalscript API", "HowTos", "Gadget API", "Properties"). Use exact names as shown by otris_overview.'),
       subfolder: z.string().optional().describe('Subfolder within the section (e.g. "classes", "interfaces")'),
     },
     async (params) => {
