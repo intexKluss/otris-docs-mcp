@@ -49,9 +49,9 @@ export async function startServer(baseUrl) {
 
   server.tool(
     'otris_read',
-    'Read the full content of a specific documentation page. Use the path from otris_overview or otris_search results. Returns title, source URL, and markdown content.',
+    'Read the full content of a specific documentation page. IMPORTANT: Always use the exact path from otris_search or otris_list results — never guess or construct paths yourself, as filenames may contain typos or unexpected spelling.',
     {
-      path: z.string().describe('Document path relative to vault root, without .md extension (e.g. "Portalscript API/classes/DocFile", "HowTos/Gentable über Gadget-Skriptliste befüllen")'),
+      path: z.string().describe('Exact document path from otris_search/otris_list results, without .md extension (e.g. "Portalscript API/classes/DocFile")'),
       max_length: z.number().int().min(1).max(200000).optional().describe('Maximum content length in characters (default: 50000). Content beyond this is truncated.'),
     },
     async (params) => {
